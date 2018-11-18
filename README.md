@@ -1,0 +1,2 @@
+# 15puzzle
+This repository contains the source code alongwith the executable file of the 15 slider puzzle. The program has a menu system and a "Statistics" feature which records the time, moves done and sessions played(and completed). Source code is well commented for understanding the logic. The program makes use of certain functions which are included in "windows.h" header file. While compiling, make sure your IDE has the same header file for successful compilation. Otherwise, running the executable only is recommended. The repository also contains a sample stats file.
