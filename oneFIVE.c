@@ -47,7 +47,7 @@ void titlescreen();
 bool readStats()                            //loading statistics data
 {
    FILE *data;
-   data=fopen("file0","rb");                //stats file(in binary mode,delete "file0" in program path to reset
+   data=fopen("file0","rb");                //stats file(in binary mode,delete "file0" in program path to reset)
    if(data==NULL)                           //no file found(fresh/reset game)
    {
        stored.MATCHES=stored.MOVES=stored.TIME=stored.MINMOVES=stored.MINTIME=0;
@@ -313,7 +313,7 @@ void updateStats()                          //update statistics and write to fil
     stored.TIME+=(CURR-START);              //time used in current game
     stored.MOVES+=moveCount;
     FILE *writ=fopen("file0","wb");         //creating a new file and writing in it(binary)
-    fprintf(writ,"%d\n%d\n%ld\n%d\n%d\n",stored.MATCHES,stored.MOVES,stored.TIME,stored.MINMOVES,stored.MINTIME);
+    fprintf(writ,"%d\n%d\n%ld\n%d\n%d",stored.MATCHES,stored.MOVES,stored.TIME,stored.MINMOVES,stored.MINTIME);
     fclose(writ);
 }
 
@@ -355,7 +355,7 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15-PUZZLE (1.0.1118)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
+    menuoutline("15PUZZLE (1.0.1119)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     cursorLocation(0,29);
     option=input(getch());
     if(option=='N')                         //new game
@@ -382,15 +382,16 @@ void titlescreen()                          //title screen
 
 void main()                                 //entire running sequence
 {
-    start:
-    readSuccess=readStats();
-    titlescreen();
-    cursorLocation(8,20);
-    printf("STARTING");
-    gameOn();
-    updateStats();
-    cursorLocation(40,20);
-    system("pause");
-    reset();
-    goto start;
+    while(1)
+    {
+        readSuccess=readStats();
+        titlescreen();
+        cursorLocation(8,20);
+        printf("STARTING");
+        gameOn();
+        updateStats();
+        cursorLocation(40,20);
+        system("pause");
+        reset();
+    }
 }
