@@ -35,7 +35,7 @@ int checksolvable(struct board*);
 char input(char);
 int displayboard(struct board*);
 void reset();
-int pausemenu();
+void pausemenu();
 void stopwatch(int);
 void inputhandler(struct board*,int);
 int checkboard(struct board*);
@@ -43,6 +43,20 @@ void gameOn();
 void updateStats();
 void statsView();
 void titlescreen();
+
+void main()             //entire running sequence(moved this up to resolve some warnings)
+{
+    while(1)
+    {
+        readSuccess=readStats();
+        titlescreen();
+        gameOn();
+        updateStats();
+        cursorLocation(40,20);
+        system("pause");
+        reset();
+    }
+}
 
 bool readStats()                            //loading statistics data
 {
@@ -102,7 +116,7 @@ void createboard(struct board *New)                      //creating game board
     }
 }
 
-int checksolvable(struct board *New)                    //check if board is solvable, uses inversion counting
+int checksolvable(struct board *New)                    //check if board is solvable, uses inverse counting
 {
     int invcount=0,boardlist[16],num1=0,num2=0;
     for(New->posI=0;New->posI<4;New->posI++)
@@ -126,7 +140,7 @@ int checksolvable(struct board *New)                    //check if board is solv
 
 char input(char Low)
 {
-    return (Low>90)?Low-=32:Low;                                //similar to toupper(), converts only lowercase to uppercase
+    return (Low>90)?Low-=32:Low;                                //similar to toupper(), converts lowercase only to uppercase
 }
 
 int displayboard(struct board *Do)                              //board display during game
@@ -160,6 +174,10 @@ int displayboard(struct board *Do)                              //board display 
     printf("MOVES %d",moveCount);                               //displaying the no. of moves done in current game
     cursorLocation(58,ypos);
     printf("TIME %d : %d.%d ", ((CURR-START)/1000)/60, ((CURR-START)/1000)%60, ((CURR-START)%1000)/100); //time display in current game
+    cursorLocation(47,20);
+    printf("W  A  S  D\tMOVE");
+    cursorLocation(54,21);
+    printf("Esc\tPAUSE");                                       //controls help
     return (10*zeroI)+zeroJ;                                    //empty position in the form of XY
 }
 
@@ -169,28 +187,28 @@ void reset()                            //reset game variables
     firstHit=false;
 }
 
-int pausemenu()
+void pausemenu()
 {
     char pauseop;
-    menuoutline("PAUSED","Esc","RESUME","N","NEW GAME","E","EXIT");
-    cursorLocation(0,29);
-    pauseop=input(getch());
-    if(pauseop==27)                     //resume
-        return 1;
-    else if(pauseop=='N')               //new game
-    {
-        reset();
-        cursorLocation(3,20);
-        printf("\tRESTARTING");
-        gameOn();
-    }
-    else if(pauseop=='E')               //exit to main menu
-    {
-        reset();
-        main();
-    }
-    else
-        return 0;
+    do{
+        menuoutline("PAUSED","Esc","RESUME","N","NEW GAME","E","EXIT");
+        cursorLocation(0,29);
+        pauseop=input(getch());
+        if(pauseop=='N')               //new game
+        {
+            reset();
+            cursorLocation(3,20);
+            printf("\tRESTARTING...");
+            gameOn();
+        }
+        else if(pauseop=='E')          //exit to main menu
+        {
+            reset();
+            main();
+        }
+        else
+            ;                           //wrong input, do nothing
+    }while(pauseop!=27);                //resume
 }
 
 void stopwatch(int toggle)  //diff=START-CURR to be got
@@ -201,11 +219,7 @@ void stopwatch(int toggle)  //diff=START-CURR to be got
         START=clock();      //change START according to time
     else                    //game paused during
     {
-        while(1)
-        {
-            if(pausemenu())     //returns 1 to resume
-                break;
-        }
+        pausemenu();            //exit out of this function to resume
         START+=(clock()-CURR);  //advancing START to maintain difference
     }
 }
@@ -258,7 +272,7 @@ void inputhandler(struct board *sw, int zero)
         stopwatch(-1);                  //pausemenu and stopwatch pause
     }
     else
-        ;                               //do nothing
+        ;                               //wrong input, do nothing
 }
 
 int checkboard(struct board *ok)                    //returns 1 to end game
@@ -288,8 +302,6 @@ void gameOn()                           //ongoing game
     int zero;                           //Empty position
     do{
             zero=displayboard(&game);   //get empty position
-            cursorLocation(47,20);
-            printf("W  A  S  D\tMOVE"); //controls help
             inputhandler(&game,zero);   //get input
     }while(!checkboard(&game));         //to exit(end) game, goes false
     displayboard(&game);                //display result
@@ -341,13 +353,10 @@ void statsView()                            //statistics display in menu
       cursorLocation(3,28);
   }
   printf("B\tBACK");
-  stats:
-  cursorLocation(0,29);
-  option=input(getch());
-  if(option=='B')
-    return;
-  else
-    goto stats;
+  do{
+    cursorLocation(0,29);
+    option=input(getch());
+  }while(option!='B');
 }
 
 void titlescreen()                          //title screen
@@ -355,11 +364,15 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15PUZZLE (1.0.1119)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
+    menuoutline("15PUZZLE (1.0.1120)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     cursorLocation(0,29);
     option=input(getch());
     if(option=='N')                         //new game
+    {
+        cursorLocation(8,20);
+        printf("STARTING...");
         return;                             //returns to main
+    }
     else if(option=='S')                    //statistics
     {
         statsView();
@@ -378,20 +391,4 @@ void titlescreen()                          //title screen
     }
     else
         goto title;
-}
-
-void main()                                 //entire running sequence
-{
-    while(1)
-    {
-        readSuccess=readStats();
-        titlescreen();
-        cursorLocation(8,20);
-        printf("STARTING");
-        gameOn();
-        updateStats();
-        cursorLocation(40,20);
-        system("pause");
-        reset();
-    }
 }
