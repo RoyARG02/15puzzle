@@ -6,7 +6,7 @@
 
 #ifndef getch
 #include<conio.h>
-#endif // define getch
+#endif                  // define getch
 
 struct stats{           //game stats structure
     int MATCHES;        //no. of matches played
@@ -16,11 +16,7 @@ struct stats{           //game stats structure
     int MINTIME;        //minimum time to completion
 }stored;
 
-struct board{           //game board
-    short int posI,posJ;
-    short int board[4][4];
-};
-struct board game;      //game object
+short int board[4][4];  //game board
 
 clock_t START,CURR;     //clock time count variables
 int moveCount=0;        //no. of moves for current game
@@ -30,21 +26,22 @@ bool readSuccess;       //data file read status
 bool readStats();       //all function declarations to avoid implicit declaration warning
 BOOL cursorLocation(const WORD,const WORD);
 void menuoutline(char*,char*,char*,char*,char*,char*,char*);
-void createboard(struct board*);
-int checksolvable(struct board*);
+void createboard();
+int checksolvable();
 char input(char);
-int displayboard(struct board*);
+int displayboard();
 void reset();
 void pausemenu();
 void stopwatch(int);
-void inputhandler(struct board*,int);
-int checkboard(struct board*);
+void inputhandler(int);
+int checkboard();
 void gameOn();
 void updateStats();
 void statsView();
 void titlescreen();
+void swap(short int*,short int*);
 
-void main()             //entire running sequence(moved this up to resolve some warnings)
+void main()                                 //entire running sequence(moved this up to resolve some warnings)
 {
     while(1)
     {
@@ -52,7 +49,9 @@ void main()             //entire running sequence(moved this up to resolve some 
         titlescreen();
         gameOn();
         updateStats();
-        cursorLocation(40,20);
+        cursorLocation(47,20);
+        printf("---------------------");
+        cursorLocation(43,21);
         system("pause");
         reset();
     }
@@ -92,38 +91,38 @@ void menuoutline(char *main,char *op1,char *sel1,char* op2,char *sel2,char *op3,
     printf("%s\t%s",op3,sel3);
 }
 
-void createboard(struct board *New)                      //creating game board
+void createboard()                                       //creating game board
 {
-    short int value=1;                                  //value to be put at random location
-    for(New->posI=0;New->posI<4;New->posI++)
+    short int value=1,posI,posJ;                         //value to be put at random location and positions
+    for(posI=0;posI<4;posI++)
     {
-        for(New->posJ=0;New->posJ<4;New->posJ++)
-            New->board[New->posI][New->posJ]=0;         //initializing all positions to zero
+        for(posJ=0;posJ<4;posJ++)
+            board[posI][posJ]=0;                        //initializing all positions to zero
     }
     srand((unsigned)time(NULL));                        //for rand()
     while(value<16)
     {
-        New->posI=rand()%4;
-        New->posJ=rand()%4;                             //choosing a random position
-        if(!((New->posI==3)&&(New->posJ==3)))           //position should not be (3,3)/empty
+        posI=rand()%4;
+        posJ=rand()%4;                                  //choosing a random position
+        if(!((posI==3)&&(posJ==3)))                     //position should not be (3,3)/empty
         {
-            if(New->board[New->posI][New->posJ]==0)
+            if(board[posI][posJ]==0)
             {
-                New->board[New->posI][New->posJ]=value; //value in random position
+                board[posI][posJ]=value;                //value in random position
                 value++;
             }
         }
     }
 }
 
-int checksolvable(struct board *New)                    //check if board is solvable, uses inverse counting
+int checksolvable()                                             //check if board is solvable, uses inverse counting
 {
-    int invcount=0,boardlist[16],num1=0,num2=0;
-    for(New->posI=0;New->posI<4;New->posI++)
+    int invcount=0,boardlist[16],num1=0,num2=0,posI,posJ;
+    for(posI=0;posI<4;posI++)
     {
-        for(New->posJ=0;New->posJ<4;New->posJ++)
+        for(posJ=0;posJ<4;posJ++)
         {
-            boardlist[num1]=New->board[New->posI][New->posJ];   //2D board to list
+            boardlist[num1]=board[posI][posJ];                  //2D board to list
             num1++;
         }
     }
@@ -143,26 +142,26 @@ char input(char Low)
     return (Low>90)?Low-=32:Low;                                //similar to toupper(), converts lowercase only to uppercase
 }
 
-int displayboard(struct board *Do)                              //board display during game
+int displayboard()                                              //board display during game
 {
-    short int zeroI, zeroJ;                                     //empty space location
+    short int zeroI, zeroJ,posI,posJ;                           //empty space location
     short int ypos=2;                                           //for use in printing the board
     system("cls");
-    for(Do->posI=0;Do->posI<4;Do->posI++)
+    for(posI=0;posI<4;posI++)
     {
         cursorLocation(47,ypos);
         printf("+----+----+----+----+");                        //upper horizontal line in the 4x4 box
         cursorLocation(47,ypos+1);
-        for(Do->posJ=0;Do->posJ<4;Do->posJ++)
+        for(posJ=0;posJ<4;posJ++)
         {
-            if(Do->board[Do->posI][Do->posJ])
-                printf("|%3d ",Do->board[Do->posI][Do->posJ]);  //value display in position
+            if(board[posI][posJ])
+                printf("|%3d ",board[posI][posJ]);              //value display in position
             else
                 printf("|    ");                                //empty space
-            if(Do->board[Do->posI][Do->posJ]==0)
+            if(board[posI][posJ]==0)
             {
-                zeroI=Do->posI;
-                zeroJ=Do->posJ;                                 //finding empty space
+                zeroI=posI;
+                zeroJ=posJ;                                     //finding empty space
             }
         }
         ypos+=2;
@@ -181,7 +180,7 @@ int displayboard(struct board *Do)                              //board display 
     return (10*zeroI)+zeroJ;                                    //empty position in the form of XY
 }
 
-void reset()                            //reset game variables
+void reset()                                                    //reset game variables
 {
     moveCount=0;
     firstHit=false;
@@ -224,9 +223,15 @@ void stopwatch(int toggle)  //diff=START-CURR to be got
     }
 }
 
-void inputhandler(struct board *sw, int zero)
+void swap(short int *x,short int *y)
 {
-    int swap;                           //for swapping two adjacent positions
+    short int temp=(*x);
+    (*x)=(*y);
+    (*y)=temp;
+}
+void inputhandler(int zero)
+{
+    //int swap;                           //for swapping two adjacent positions
     int oI=zero/10;
     int oJ=zero%10;                     //extracting empty position from displayboard
     char move;                          //W A S D
@@ -241,41 +246,31 @@ void inputhandler(struct board *sw, int zero)
         stopwatch(1);                   //no first hit(input)
     if((move=='W')&&(oI!=0))            //forward
     {
-        swap=sw->board[oI-1][oJ];
-        sw->board[oI-1][oJ]=sw->board[oI][oJ];
-        sw->board[oI][oJ]=swap;
+        swap(&board[oI-1][oJ],&board[oI][oJ]);
         moveCount++;
     }
     else if((move=='A')&&(oJ!=0))       //left
     {
-        swap=sw->board[oI][oJ-1];
-        sw->board[oI][oJ-1]=sw->board[oI][oJ];
-        sw->board[oI][oJ]=swap;
+        swap(&board[oI][oJ-1],&board[oI][oJ]);
         moveCount++;
     }
     else if((move=='S')&&(oI!=3))       //right
     {
-        swap=sw->board[oI+1][oJ];
-        sw->board[oI+1][oJ]=sw->board[oI][oJ];
-        sw->board[oI][oJ]=swap;
+        swap(&board[oI+1][oJ],&board[oI][oJ]);
         moveCount++;
     }
     else if((move=='D')&&(oJ!=3))       //down
     {
-        swap=sw->board[oI][oJ+1];
-        sw->board[oI][oJ+1]=sw->board[oI][oJ];
-        sw->board[oI][oJ]=swap;
+        swap(&board[oI][oJ+1],&board[oI][oJ]);
         moveCount++;
     }
     else if(move==27)                   //pause(Esc)
     {
         stopwatch(-1);                  //pausemenu and stopwatch pause
     }
-    else
-        ;                               //wrong input, do nothing
 }
 
-int checkboard(struct board *ok)                    //returns 1 to end game
+int checkboard()                        //returns 1 to end game
 {
     short int checkValue=1;
     for(short int i=0;i<4;i++)
@@ -284,27 +279,27 @@ int checkboard(struct board *ok)                    //returns 1 to end game
         {
           if(!(i==3&&j==3))
           {
-              if(ok->board[i][j]==checkValue)       //sequential position checking except at (3,3)
-                checkValue++;                       //true, check next value at next position
+              if(board[i][j]==checkValue)       //sequential position checking except at (3,3)
+                checkValue++;                   //true, check next value at next position
               else
-                return 0;                           //false, exit
+                return 0;                       //false, exit
           }
         }
     }
-    return 1;                                       //true, exit
+    return 1;                                   //true, exit
 }
 
 void gameOn()                           //ongoing game
 {
     do{
-            createboard(&game);
-    }while(checksolvable(&game));       //create a board and check if it is solvable
-    int zero;                           //Empty position
+            createboard();
+    }while(checksolvable());        //create a board and check if it is solvable
+    int zero;                       //Empty position
     do{
-            zero=displayboard(&game);   //get empty position
-            inputhandler(&game,zero);   //get input
-    }while(!checkboard(&game));         //to exit(end) game, goes false
-    displayboard(&game);                //display result
+            zero=displayboard();    //get empty position
+            inputhandler(zero);     //get input
+    }while(!checkboard());          //to exit(end) game, goes false
+    displayboard();                 //display result
 }
 
 void updateStats()                          //update statistics and write to file
@@ -364,7 +359,7 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15PUZZLE (1.0.1120)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
+    menuoutline("15PUZZLE (1.0.1208)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     cursorLocation(0,29);
     option=input(getch());
     if(option=='N')                         //new game
