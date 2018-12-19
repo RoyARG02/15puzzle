@@ -3,10 +3,7 @@
 #include<time.h>
 #include<windows.h>
 #include<stdbool.h>
-
-#ifndef getch
 #include<conio.h>
-#endif                  // define getch
 
 struct stats{           //game stats structure
     int MATCHES;        //no. of matches played
@@ -16,7 +13,7 @@ struct stats{           //game stats structure
     int MINTIME;        //minimum time to completion
 }stored;
 
-short int board[4][4];  //game board
+short int board[4][4]={ 0 };  //game board(initializing all elements to zero)
 
 clock_t START,CURR;     //clock time count variables
 int moveCount=0;        //no. of moves for current game
@@ -91,14 +88,9 @@ void menuoutline(char *main,char *op1,char *sel1,char* op2,char *sel2,char *op3,
     printf("%s\t%s",op3,sel3);
 }
 
-void createboard()                                       //creating game board
+void createboard()                                      //creating game board
 {
-    short int value=1,posI,posJ;                         //value to be put at random location and positions
-    for(posI=0;posI<4;posI++)
-    {
-        for(posJ=0;posJ<4;posJ++)
-            board[posI][posJ]=0;                        //initializing all positions to zero
-    }
+    short int value=1,posI,posJ;                        //value to be put at random location and positions
     srand((unsigned)time(NULL));                        //for rand()
     while(value<16)
     {
@@ -117,21 +109,22 @@ void createboard()                                       //creating game board
 
 int checksolvable()                                             //check if board is solvable, uses inverse counting
 {
-    int invcount=0,boardlist[16],num1=0,num2=0,posI,posJ;
+    int invcount=0,greater,boardlist[16]={ 0 },num1,posI,posJ;
     for(posI=0;posI<4;posI++)
     {
         for(posJ=0;posJ<4;posJ++)
         {
-            boardlist[num1]=board[posI][posJ];                  //2D board to list
-            num1++;
-        }
-    }
-    for(num1=0;num1<14;num1++)
-    {
-        for(num2=num1+1;num2<15;num2++)
-        {
-            if(boardlist[num1]>boardlist[num2])                 //if greater number appears first
-                invcount++;
+            if(board[posI][posJ])
+            {
+                greater=0;
+                for(num1=0;boardlist[num1];num1++)
+                {
+                    if(board[posI][posJ]>boardlist[num1]&&boardlist[num1])
+                        greater++;
+                }
+                invcount+=board[posI][posJ]-greater-1;
+                boardlist[num1]=board[posI][posJ];
+            }
         }
     }
     return(invcount%2);                                         //solvable if even
@@ -231,7 +224,6 @@ void swap(short int *x,short int *y)
 }
 void inputhandler(int zero)
 {
-    //int swap;                           //for swapping two adjacent positions
     int oI=zero/10;
     int oJ=zero%10;                     //extracting empty position from displayboard
     char move;                          //W A S D
@@ -359,7 +351,7 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15PUZZLE (1.0.1208)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
+    menuoutline("15PUZZLE (1.0.1219)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     cursorLocation(0,29);
     option=input(getch());
     if(option=='N')                         //new game
