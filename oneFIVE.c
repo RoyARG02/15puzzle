@@ -142,7 +142,7 @@ char input(char Low)
 
 int displayboard()                                              //board display during game
 {
-    short int zeroI, zeroJ,posI,posJ;                           //empty space location
+    short int zeroI,zeroJ,posI,posJ;                           //empty space location
     short int ypos=2;                                           //for use in printing the board
     system("cls");
     for(posI=0;posI<4;posI++)
