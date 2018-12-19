@@ -13,7 +13,7 @@ struct stats{           //game stats structure
     int MINTIME;        //minimum time to completion
 }stored;
 
-short int board[4][4]={ 0 };  //game board(initializing all elements to zero)
+short int board[4][4];  //game board
 
 clock_t START,CURR;     //clock time count variables
 int moveCount=0;        //no. of moves for current game
@@ -92,11 +92,16 @@ void createboard()                                      //creating game board
 {
     short int value=1,posI,posJ;                        //value to be put at random location and positions
     srand((unsigned)time(NULL));                        //for rand()
+    for(posI=0;posI<4;posI++)
+    {
+        for(posJ=0;posJ<4;posJ++)
+            board[posI][posJ]=0;                        //initializing all board elements to zero
+    }
     while(value<16)
     {
         posI=rand()%4;
         posJ=rand()%4;                                  //choosing a random position
-        if(!((posI==3)&&(posJ==3)))                     //position should not be (3,3)/empty
+        if(posI*posJ!=9)                                //position should not be (3,3)/occupied
         {
             if(board[posI][posJ]==0)
             {
