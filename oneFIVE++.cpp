@@ -51,7 +51,7 @@ int main()                                 //entire running sequence(moved this 
         gameOn();
         updateStats();
         cursorLocation(47,20);
-        printf("---------------------");
+        cout<<"---------------------";
         cursorLocation(43,21);
         system("pause");
         reset();
@@ -362,7 +362,7 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15PUZZLE++ (1.0.1219)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
+    menuoutline("15PUZZLE++ (1.0.1227)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     cursorLocation(0,29);
     option=input(getch());
     if(option=='N')                         //new game
