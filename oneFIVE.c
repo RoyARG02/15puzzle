@@ -37,21 +37,32 @@ void updateStats();
 void statsView();
 void titlescreen();
 void swap(short int*,short int*);
+void windowSetup();
 
 void main()                                 //entire running sequence(moved this up to resolve some warnings)
 {
+    windowSetup();
     while(1)
     {
         readSuccess=readStats();
         titlescreen();
         gameOn();
         updateStats();
-        cursorLocation(47,20);
+        cursorLocation(29,20);
         printf("---------------------");
-        cursorLocation(43,21);
+        cursorLocation(25,21);
         system("pause");
         reset();
     }
+}
+
+void windowSetup()
+{
+    COORD coord={80,30};
+    SMALL_RECT Rect={0,0,79,29};
+    SetConsoleTitleA("oneFIVE");
+    SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE),TRUE,&Rect);
+    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),coord);
 }
 
 bool readStats()                            //loading statistics data
@@ -63,7 +74,7 @@ bool readStats()                            //loading statistics data
        stored.MATCHES=stored.MOVES=stored.TIME=stored.MINMOVES=stored.MINTIME=0;
        return false;                        //no file found, thus fresh game
    }
-   fscanf(data,"%d%d%ld%d%d",&stored.MATCHES,&stored.MOVES,&stored.TIME,&stored.MINMOVES,&stored.MINTIME);  //stored in global variables for use in current session
+   fread((char*)&stored,sizeof(stored),1,data);     //stored in global variables for use in current session
    fclose(data);
    return true;                             //file found and data loaded
 }
@@ -147,9 +158,9 @@ int displayboard()                                              //board display 
     system("cls");
     for(posI=0;posI<4;posI++)
     {
-        cursorLocation(47,ypos);
+        cursorLocation(29,ypos);
         printf("+----+----+----+----+");                        //upper horizontal line in the 4x4 box
-        cursorLocation(47,ypos+1);
+        cursorLocation(29,ypos+1);
         for(posJ=0;posJ<4;posJ++)
         {
             if(board[posI][posJ])
@@ -164,16 +175,16 @@ int displayboard()                                              //board display 
         }
         ypos+=2;
         printf("|");
-        cursorLocation(47,ypos);
+        cursorLocation(29,ypos);
         printf("+----+----+----+----+");                        //bottom horizontal line(s) in the 4x4 box
     }
-    cursorLocation(45,++ypos);
+    cursorLocation(27,++ypos);
     printf("MOVES %d",moveCount);                               //displaying the no. of moves done in current game
-    cursorLocation(58,ypos);
+    cursorLocation(40,ypos);
     printf("TIME %d : %d.%d ", ((CURR-START)/1000)/60, ((CURR-START)/1000)%60, ((CURR-START)%1000)/100); //time display in current game
-    cursorLocation(47,20);
+    cursorLocation(29,20);
     printf("W  A  S  D\tMOVE");
-    cursorLocation(54,21);
+    cursorLocation(36,21);
     printf("Esc\tPAUSE");                                       //controls help
     return (10*zeroI)+zeroJ;                                    //empty position in the form of XY
 }
@@ -317,7 +328,7 @@ void updateStats()                          //update statistics and write to fil
     stored.TIME+=(CURR-START);              //time used in current game
     stored.MOVES+=moveCount;
     FILE *writ=fopen("file0","wb");         //creating a new file and writing in it(binary)
-    fprintf(writ,"%d\n%d\n%ld\n%d\n%d",stored.MATCHES,stored.MOVES,stored.TIME,stored.MINMOVES,stored.MINTIME);
+    fwrite((char*)&stored,sizeof(stored),1,writ);
     fclose(writ);
 }
 
@@ -356,7 +367,7 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15PUZZLE (1.0.1219)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
+    menuoutline("15PUZZLE (1.0.0627)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     cursorLocation(0,29);
     option=input(getch());
     if(option=='N')                         //new game

@@ -41,22 +41,33 @@ void updateStats();
 void statsView();
 void titlescreen();
 void swapfunc(short int*,short int*);
+void windowSetup();
 
 int main()                                 //entire running sequence(moved this up to resolve some warnings)
 {
+    windowSetup();
     while(1)
     {
         readSuccess=readStats();
         titlescreen();
         gameOn();
         updateStats();
-        cursorLocation(47,20);
+        cursorLocation(29,20);
         cout<<"---------------------";
-        cursorLocation(43,21);
+        cursorLocation(23,21);
         system("pause");
         reset();
     }
     return 0;
+}
+
+void windowSetup()
+{
+    COORD coord={80,30};
+    SMALL_RECT Rect={0,0,79,29};
+    SetConsoleTitleA("oneFIVE++");
+    SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE),TRUE,&Rect);
+    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),coord);
 }
 
 bool readStats()                            //loading statistics data
@@ -152,9 +163,9 @@ int displayboard()                                              //board display 
     system("cls");
     for(posI=0;posI<4;posI++)
     {
-        cursorLocation(47,ypos);
+        cursorLocation(29,ypos);
         cout<<"+----+----+----+----+";                        //upper horizontal line in the 4x4 box
-        cursorLocation(47,ypos+1);
+        cursorLocation(29,ypos+1);
         for(posJ=0;posJ<4;posJ++)
         {
             if(board[posI][posJ])
@@ -169,16 +180,16 @@ int displayboard()                                              //board display 
         }
         ypos+=2;
         cout<<"|";
-        cursorLocation(47,ypos);
+        cursorLocation(29,ypos);
         cout<<"+----+----+----+----+";                        //bottom horizontal line(s) in the 4x4 box
     }
-    cursorLocation(45,++ypos);
+    cursorLocation(27,++ypos);
     cout<<"MOVES "<<moveCount;                               //displaying the no. of moves done in current game
-    cursorLocation(58,ypos);
+    cursorLocation(40,ypos);
     cout<<"TIME "<<((CURR-START)/1000)/60<<" : "<<((CURR-START)/1000)%60<<"."<<((CURR-START)%1000)/100<<" "; //time display in current game
-    cursorLocation(47,20);
+    cursorLocation(29,20);
     cout<<"W  A  S  D\tMOVE";
-    cursorLocation(54,21);
+    cursorLocation(36,21);
     cout<<"Esc\tPAUSE";                                       //controls help
     return (10*zeroI)+zeroJ;                                  //empty position in the form of XY
 }
@@ -362,7 +373,7 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15PUZZLE++ (1.0.1227)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
+    menuoutline("15PUZZLE++ (1.0.0627)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     cursorLocation(0,29);
     option=input(getch());
     if(option=='N')                         //new game

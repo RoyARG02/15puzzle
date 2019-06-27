@@ -13,6 +13,6 @@ _**IMPORTANT** file0 may not work with oneFIVE++.exe, same for file9 and oneFIVE
 The source code is well commented for understandability.
 
 *****Features coming IN DISTANT FUTURE*****
-* Multi-threading in C++ (See [Issues](https://github.com/RoyARG02/15puzzle/wiki/Excessive-Flashing))
+* Multithreading (See [Issues](https://github.com/RoyARG02/15puzzle/wiki/Excessive-Flashing))
 * Flexible board size (3x3,5x5)
 * Having the computer solve any given puzzle
