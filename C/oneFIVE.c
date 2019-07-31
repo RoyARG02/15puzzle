@@ -26,11 +26,13 @@ void menuoutline(char*,char*,char*,char*,char*,char*,char*);
 void createboard();
 int checksolvable();
 char input(char);
+void displayboardFrame();
 int displayboard();
 void reset();
 void pausemenu();
 void stopwatch(int);
-void inputhandler(int);
+void displayStopwatch();
+bool inputhandler(int);
 int checkboard();
 void gameOn();
 void updateStats();
@@ -48,9 +50,9 @@ void main()                                 //entire running sequence(moved this
         titlescreen();
         gameOn();
         updateStats();
-        cursorLocation(29,20);
-        printf("---------------------");
-        cursorLocation(25,21);
+        cursorLocation(3,14);
+        printf("SOLVED!!!-----------------------------------------------------------------");
+        cursorLocation(3,16);
         system("pause");
         reset();
     }
@@ -58,11 +60,15 @@ void main()                                 //entire running sequence(moved this
 
 void windowSetup()
 {
+    srand((unsigned)time(NULL));                        //for rand(), placing here requires less time to restart
     COORD coord={80,30};
     SMALL_RECT Rect={0,0,79,29};
+    CONSOLE_CURSOR_INFO lpCursor = {1, false};          //invisible cursor
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTitleA("oneFIVE");
-    SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE),TRUE,&Rect);
-    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),coord);
+    SetConsoleWindowInfo(console, TRUE, &Rect);         //set window size
+    SetConsoleScreenBufferSize(console, coord);         //set console buffer size
+    SetConsoleCursorInfo(console, &lpCursor);           //disable cursor
 }
 
 bool readStats()                            //loading statistics data
@@ -102,7 +108,6 @@ void menuoutline(char *main,char *op1,char *sel1,char* op2,char *sel2,char *op3,
 void createboard()                                      //creating game board
 {
     short int value=1,posI,posJ;                        //value to be put at random location and positions
-    srand((unsigned)time(NULL));                        //for rand()
     for(posI=0;posI<4;posI++)
     {
         for(posJ=0;posJ<4;posJ++)
@@ -151,45 +156,55 @@ char input(char Low)
     return (Low>90)?Low-=32:Low;                                //similar to toupper(), converts lowercase only to uppercase
 }
 
-int displayboard()                                              //board display during game
-{
-    short int zeroI,zeroJ,posI,posJ;                           //empty space location
-    short int ypos=2;                                           //for use in printing the board
+void displayboardFrame(){                                       //also clears the screen
+    short int ypos = 2, posX = 29, posY = 2;
     system("cls");
-    for(posI=0;posI<4;posI++)
-    {
-        cursorLocation(29,ypos);
+    for( ; posY < 10 ; ++posY){
+        cursorLocation(posX, posY++);
         printf("+----+----+----+----+");                        //upper horizontal line in the 4x4 box
-        cursorLocation(29,ypos+1);
-        for(posJ=0;posJ<4;posJ++)
-        {
-            if(board[posI][posJ])
-                printf("|%3d ",board[posI][posJ]);              //value display in position
-            else
-                printf("|    ");                                //empty space
-            if(board[posI][posJ]==0)
-            {
-                zeroI=posI;
-                zeroJ=posJ;                                     //finding empty space
-            }
+        for( ; posX < 50 ; posX += 5){
+            cursorLocation(posX, posY);
+            printf("|");
         }
-        ypos+=2;
-        printf("|");
-        cursorLocation(29,ypos);
-        printf("+----+----+----+----+");                        //bottom horizontal line(s) in the 4x4 box
+        posX = 29;   
     }
-    cursorLocation(27,++ypos);
-    printf("MOVES %d",moveCount);                               //displaying the no. of moves done in current game
-    cursorLocation(40,ypos);
-    printf("TIME %d : %d.%d ", ((CURR-START)/1000)/60, ((CURR-START)/1000)%60, ((CURR-START)%1000)/100); //time display in current game
-    cursorLocation(29,20);
-    printf("W  A  S  D\tMOVE");
-    cursorLocation(36,21);
-    printf("Esc\tPAUSE");                                       //controls help
-    return (10*zeroI)+zeroJ;                                    //empty position in the form of XY
+    cursorLocation(posX, posY);
+    printf("+----+----+----+----+");  
 }
 
-void reset()                                                    //reset game variables
+int displayboard()                                              //board display during game
+{
+    short int zero, posI = 0, posJ = 0;                         //empty space location
+    short int posY=3, posX = 30;                                //for use in printing the board
+    for( ; posY < 10 ; posY += 2, posI++){
+        for( ; posX < 50 ; posX += 5, posJ++){
+            cursorLocation(posX, posY);
+            if(board[posI][posJ]){
+                printf("%4d", board[posI][posJ]);
+            }
+            else{
+                printf("    ");
+                zero = (10 * posI) + posJ;
+            }
+        }
+        posJ = 0;
+        posX = 30;
+    }
+    cursorLocation(27, 12);
+    printf("MOVES %d",moveCount);              //displaying the no. of moves done in current game
+    cursorLocation(3, 14);
+    printf("Esc\tPAUSE");                           //controls help
+    cursorLocation(3, 16);
+    printf("W A S D  MOVE");
+    return zero;                                    //empty position returned
+}
+
+void displayStopwatch(){
+    cursorLocation(40,12);
+    printf("TIME %d : %d.%d     ", ((CURR-START)/1000)/60, ((CURR-START)/1000)%60, ((CURR-START)%1000)/100); //time display in current game
+}
+
+void reset()                                       //reset game variables
 {
     moveCount=0;
     firstHit=false;
@@ -200,22 +215,21 @@ void pausemenu()
     char pauseop;
     do{
         menuoutline("PAUSED","Esc","RESUME","N","NEW GAME","E","EXIT");
-        cursorLocation(0,29);
         pauseop=input(getch());
         if(pauseop=='N')               //new game
         {
             reset();
             cursorLocation(3,20);
             printf("\tRESTARTING...");
-            gameOn();
+            reset();
+            gameOn();                   //relaunch function, break loop on exit
+            break;
         }
         else if(pauseop=='E')          //exit to main menu
         {
             reset();
             main();
         }
-        else
-            ;                           //wrong input, do nothing
     }while(pauseop!=27);                //resume
 }
 
@@ -238,16 +252,17 @@ void swap(short int *x,short int *y)
     (*x)=(*y);
     (*y)=temp;
 }
-void inputhandler(int zero)
+bool inputhandler(int zero)
 {
-    int oI=zero/10;
-    int oJ=zero%10;                     //extracting empty position from displayboard
+    int oI=zero / 10;
+    int oJ=zero % 10;                   //extracting empty position from displayboard
+    bool keyHit = false;
     char move;                          //W A S D
-    cursorLocation(0,29);
     if(kbhit())                         //keyboard hit
     {
         move=input(getch());
         firstHit=true;                  //first hit(input)
+        keyHit = true;
     }
     stopwatch(0);                       //continue stopwatch
     if(!firstHit)                       //if false, stop changing START according to time
@@ -274,8 +289,12 @@ void inputhandler(int zero)
     }
     else if(move==27)                   //pause(Esc)
     {
+        cursorLocation(3, 16);
+        printf("     ");                //to overwrite 'move' prompt
         stopwatch(-1);                  //pausemenu and stopwatch pause
+        displayboardFrame();            //clear screen and redisplay board
     }
+    return keyHit;
 }
 
 int checkboard()                        //returns 1 to end game
@@ -302,12 +321,14 @@ void gameOn()                           //ongoing game
     do{
             createboard();
     }while(checksolvable());        //create a board and check if it is solvable
-    int zero;                       //Empty position
+    displayboardFrame();
+    int zero = displayboard();      //Empty position
     do{
-            zero=displayboard();    //get empty position
-            inputhandler(zero);     //get input
+        if(inputhandler(zero)){
+            zero = displayboard();  //refresh board when input is obtained
+        }
+        displayStopwatch();
     }while(!checkboard());          //to exit(end) game, goes false
-    displayboard();                 //display result
 }
 
 void updateStats()                          //update statistics and write to file
@@ -357,7 +378,6 @@ void statsView()                            //statistics display in menu
   }
   printf("B\tBACK");
   do{
-    cursorLocation(0,29);
     option=input(getch());
   }while(option!='B');
 }
@@ -367,8 +387,7 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15PUZZLE (1.0.0627)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
-    cursorLocation(0,29);
+    menuoutline("15PUZZLE (1.0.0731)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     option=input(getch());
     if(option=='N')                         //new game
     {
@@ -385,10 +404,11 @@ void titlescreen()                          //title screen
     {
         cursorLocation(8,20);
         printf("Y\tCONFIRM");
-        cursorLocation(0,29);
         option=input(getch());
-        if(option=='Y')
+        if(option=='Y'){
+            system("cls");
             exit(0);                        //will still be paused after compiling in some IDEs
+        }
         else
             goto title;
     }

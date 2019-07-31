@@ -4,15 +4,15 @@
 ### The contents of this repo
 - Source code of the 15 puzzle in C `oneFIVE.c`
 - Executable of the above source code `oneFIVE.exe`
-- Required (or not, depending on your choice) a sample statistics file `file0` for `oneFIVE.exe`
+- A sample statistics file `file0` for `oneFIVE.exe`
 - Source code of the 15 puzzle in C++ `oneFIVE++.cpp`
 - Executable of the above source code `oneFIVE++.exe`
-- Required (or not, depending on your choice) a sample statistics file `file9`  for `oneFIVE++.exe` <br>
-_**IMPORTANT** file0 may not work with oneFIVE++.exe, same for file9 and oneFIVE.exe_
+- A sample statistics file `file9`  for `oneFIVE++.exe` <br>
+_**IMPORTANT** The sample stats file of one program may work with the other program, but only after renaming it appropriately._
 
 The source code is well commented for understandability.
 
 *****Features coming IN DISTANT FUTURE*****
-* Multithreading (See [Issues](https://github.com/RoyARG02/15puzzle/wiki/Excessive-Flashing))
+* :heavy_check_mark: ~~Multithreading (See Issues)~~ Fixed as of 1.0.0731
 * Flexible board size (3x3,5x5)
 * Having the computer solve any given puzzle

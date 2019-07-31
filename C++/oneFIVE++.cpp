@@ -30,11 +30,13 @@ void menuoutline(const string&,const string&,const string&,const string&,const s
 void createboard();
 int checksolvable();
 char input(char);
+void displayboardFrame();
 int displayboard();
 void reset();
 void pausemenu();
 void stopwatch(int);
-void inputhandler(int);
+void displayStopwatch();
+bool inputhandler(int);
 int checkboard();
 void gameOn();
 void updateStats();
@@ -52,9 +54,9 @@ int main()                                 //entire running sequence(moved this 
         titlescreen();
         gameOn();
         updateStats();
-        cursorLocation(29,20);
-        cout<<"---------------------";
-        cursorLocation(23,21);
+        cursorLocation(3, 14);
+        cout<<"SOLVED!!!-----------------------------------------------------------------";
+        cursorLocation(3, 16);
         system("pause");
         reset();
     }
@@ -63,11 +65,15 @@ int main()                                 //entire running sequence(moved this 
 
 void windowSetup()
 {
+    srand((unsigned)time(NULL));                        //for rand(), placing here requires less time to restart
     COORD coord={80,30};
     SMALL_RECT Rect={0,0,79,29};
+    CONSOLE_CURSOR_INFO lpCursor = {1, false};          //invisible cursor
+    HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
     SetConsoleTitleA("oneFIVE++");
-    SetConsoleWindowInfo(GetStdHandle(STD_OUTPUT_HANDLE),TRUE,&Rect);
-    SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE),coord);
+    SetConsoleWindowInfo(console, TRUE, &Rect);         //set window size
+    SetConsoleScreenBufferSize(console, coord);         //set console buffer size
+    SetConsoleCursorInfo(console, &lpCursor);           //disable cursor
 }
 
 bool readStats()                            //loading statistics data
@@ -107,7 +113,6 @@ void menuoutline(const string &main,const string &op1,const string &sel1,const s
 void createboard()                                      //creating game board
 {
     short int value=1,posI,posJ;                        //value to be put at random location and positions
-    srand((unsigned)time(NULL));                        //for rand()
     for(posI=0;posI<4;posI++)
     {
         for(posJ=0;posJ<4;posJ++)
@@ -156,42 +161,52 @@ char input(char Low)
     return (Low>90)?Low-=32:Low;                                //similar to toupper(), converts lowercase only to uppercase
 }
 
+void displayboardFrame(){                                       //also clears the screen
+    short int ypos = 2, posX = 29, posY = 2;
+    system("cls");
+    for( ; posY < 10 ; ++posY){
+        cursorLocation(posX, posY++);
+        cout<<"+----+----+----+----+";                        //upper horizontal line in the 4x4 box
+        for( ; posX < 50 ; posX += 5){
+            cursorLocation(posX, posY);
+            printf("|");
+        }
+        posX = 29;   
+    }
+    cursorLocation(posX, posY);
+    cout<<"+----+----+----+----+";  
+}
+
 int displayboard()                                              //board display during game
 {
-    short int zeroI,zeroJ,posI,posJ;                           //empty space location
-    short int ypos=2;                                          //for use in printing the board
-    system("cls");
-    for(posI=0;posI<4;posI++)
-    {
-        cursorLocation(29,ypos);
-        cout<<"+----+----+----+----+";                        //upper horizontal line in the 4x4 box
-        cursorLocation(29,ypos+1);
-        for(posJ=0;posJ<4;posJ++)
-        {
-            if(board[posI][posJ])
-                cout<<"|"<<right<<setw(4)<<board[posI][posJ];        //value display in position
-            else
-                cout<<"|    ";                                //empty space
-            if(board[posI][posJ]==0)
-            {
-                zeroI=posI;
-                zeroJ=posJ;                                     //finding empty space
+    short int zero, posI = 0, posJ = 0;                         //empty space location
+    short int posY=3, posX = 30;                                //for use in printing the board
+    for( ; posY < 10 ; posY += 2, posI++){
+        for( ; posX < 50 ; posX += 5, posJ++){
+            cursorLocation(posX, posY);
+            if(board[posI][posJ]){
+                cout<<right<<setw(4)<<board[posI][posJ];
+            }
+            else{
+                cout<<"    ";
+                zero = (10 * posI) + posJ;
             }
         }
-        ypos+=2;
-        cout<<"|";
-        cursorLocation(29,ypos);
-        cout<<"+----+----+----+----+";                        //bottom horizontal line(s) in the 4x4 box
+        posJ = 0;
+        posX = 30;
     }
-    cursorLocation(27,++ypos);
-    cout<<"MOVES "<<moveCount;                               //displaying the no. of moves done in current game
-    cursorLocation(40,ypos);
-    cout<<"TIME "<<((CURR-START)/1000)/60<<" : "<<((CURR-START)/1000)%60<<"."<<((CURR-START)%1000)/100<<" "; //time display in current game
-    cursorLocation(29,20);
-    cout<<"W  A  S  D\tMOVE";
-    cursorLocation(36,21);
-    cout<<"Esc\tPAUSE";                                       //controls help
-    return (10*zeroI)+zeroJ;                                  //empty position in the form of XY
+    cursorLocation(27, 12);
+    cout<<"MOVES "<<moveCount;              //displaying the no. of moves done in current game
+    cursorLocation(3, 14);
+    cout<<"Esc\tPAUSE";                           //controls help
+    cursorLocation(3, 16);
+    cout<<"W A S D  MOVE";
+    return zero;                                    //empty position returned
+}
+
+void displayStopwatch(){
+    cursorLocation(40,12);
+    cout<<"TIME "<<((CURR-START)/1000)/60<<" : "<<((CURR-START)/1000)%60<<"."<<((CURR-START)%1000)/100<<"     "; //time display in current game
 }
 
 void reset()                                                  //reset game variables
@@ -212,15 +227,15 @@ void pausemenu()
             reset();
             cursorLocation(3,20);
             cout<<"\tRESTARTING...";
+            reset();
             gameOn();
+            break;
         }
         else if(pauseop=='E')          //exit to main menu
         {
             reset();
             main();
         }
-        else
-            ;                           //wrong input, do nothing
     }while(pauseop!=27);                //resume
 }
 
@@ -243,16 +258,18 @@ void swapfunc(short int *x,short int *y)
     (*x)=(*y);
     (*y)=temp;
 }
-void inputhandler(int zero)
+bool inputhandler(int zero)
 {
     int oI=zero/10;
     int oJ=zero%10;                     //extracting empty position from displayboard
+    bool keyHit = false;
     char MOVE;                          //W A S D
     cursorLocation(0,29);
     if(kbhit())                         //keyboard hit
     {
         MOVE=input(getch());
         firstHit=true;                  //first hit(input)
+        keyHit = true;
     }
     stopwatch(0);                       //continue stopwatch
     if(!firstHit)                       //if false, stop changing START according to time
@@ -279,8 +296,12 @@ void inputhandler(int zero)
     }
     else if(MOVE==27)                   //pause(Esc)
     {
+        cursorLocation(3, 16);
+        cout<<"     ";
         stopwatch(-1);                  //pausemenu and stopwatch pause
+        displayboardFrame();
     }
+    return keyHit;
 }
 
 int checkboard()                        //returns 1 to end game
@@ -307,12 +328,14 @@ void gameOn()                           //ongoing game
     do{
             createboard();
     }while(checksolvable());        //create a board and check if it is solvable
-    int zero;                       //Empty position
+    displayboardFrame();
+    int zero = displayboard();                       //Empty position
     do{
+        if(inputhandler(zero)){
             zero=displayboard();    //get empty position
-            inputhandler(zero);     //get input
+        }
+        displayStopwatch();                          //get input
     }while(!checkboard());          //to exit(end) game, goes false
-    displayboard();                 //display result
 }
 
 void updateStats()                          //update statistics and write to file
@@ -373,7 +396,7 @@ void titlescreen()                          //title screen
     char option;
     title:
     system("cls");
-    menuoutline("15PUZZLE++ (1.0.0627)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
+    menuoutline("15PUZZLE++ (1.0.0731)","N","NEW GAME","S","STATISTICS","Q","QUIT");       //15 puzzle
     cursorLocation(0,29);
     option=input(getch());
     if(option=='N')                         //new game
@@ -393,8 +416,10 @@ void titlescreen()                          //title screen
         cout<<"Y\tCONFIRM";
         cursorLocation(0,29);
         option=input(getch());
-        if(option=='Y')
-            exit(0);                        //will still be paused after compiling in some IDEs
+        if(option=='Y'){
+            system("cls");
+            exit(0);                                               //will still be paused after compiling in some IDEs
+        }
         else
             goto title;
     }
