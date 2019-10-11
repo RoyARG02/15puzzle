@@ -1,6 +1,18 @@
 # 15puzzle
 15puzzle is a simple console program written in both **C** and **C++** which simulates the familiar 15-slider game.
 
+### Screenshots
+
+<p align = "middle">
+  <img src="screenshots/mainmenu.png" width=600>
+  <br><br>
+  <img src="screenshots/gameinprogress.png" width=600>
+  <br><br>
+  <img src="screenshots/gamepaused.png" width=600>
+  <br><br>
+  <img src="screenshots/statistics.png" width=600>
+</p>
+
 ### The contents of this repo
 - Source code of the 15 puzzle in C `oneFIVE.c`
 - Executable of the above source code `oneFIVE.exe`
